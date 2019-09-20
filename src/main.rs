@@ -35,12 +35,11 @@ fn main() {
         .get_matches();
 
 
-    println!("{:?}", cli_matches);
     let warning = get_thresholds(&cli_matches, "WARNING").unwrap();
     let critical = get_thresholds(&cli_matches, "CRITICAL").unwrap();
 
     if let Some(t) = cli_matches.value_of("TYPE") {
-        if t == "men" {
+        if t == "mem" {
             let vm = virtual_memory().unwrap();
             match monitoring_out("Memory", vm.percent, warning, critical) {
                 Ok(ret_code) => process::exit(ret_code),
@@ -114,6 +113,34 @@ mod tests {
     #[should_panic]
     fn test_monitoring_out_swap_panic3() {
         assert_eq!(monitoring_out("swap", 83.0, -80.0, 85.0), Ok(3));
+    }
+
+    #[test]
+    fn test_monitoring_out_mem_ok() {
+        assert_eq!(monitoring_out("mem", 80.0, 81.0, 82.0), Ok(0));
+    }
+    #[test]
+    fn test_monitoring_out_mem_warning() {
+        assert_eq!(monitoring_out("mem", 81.0, 80.0, 82.0), Ok(1));
+    }
+    #[test]
+    fn test_monitoring_out_mem_critical() {
+        assert_eq!(monitoring_out("mem", 83.0, 80.0, 82.0), Ok(2));
+    }
+    #[test]
+    #[should_panic]
+    fn test_monitoring_out_mem_panic() {
+        assert_eq!(monitoring_out("mem", -83.0, 80.0, 82.0), Ok(3));
+    }
+    #[test]
+    #[should_panic]
+    fn test_monitoring_out_mem_panic2() {
+        assert_eq!(monitoring_out("mem", 83.0, 80.0, -82.0), Ok(3));
+    }
+    #[test]
+    #[should_panic]
+    fn test_monitoring_out_mem_panic3() {
+        assert_eq!(monitoring_out("mem", 83.0, -80.0, 85.0), Ok(3));
     }
 
 }
