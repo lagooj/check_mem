@@ -1,0 +1,17 @@
+sudo: false
+language: rust
+cache: cargo
+rust:
+    - stable
+    - beta
+    - nightly
+
+env:
+  global:
+    - RUST_BACKTRACE=1
+
+before_script:
+  - rustup component add clippy
+script:
+  - cargo clippy
+  - cargo test
